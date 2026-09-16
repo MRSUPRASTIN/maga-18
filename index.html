@@ -210,6 +210,7 @@
             display: flex;
             flex-direction: column;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .card:hover {
@@ -269,7 +270,21 @@
             background: var(--gradient);
         }
 
-        /* Cart & Order Drawer */
+        .del-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.8);
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            z-index: 10;
+        }
+
+        /* Cart Drawer */
         .cart-drawer {
             position: fixed;
             top: 0;
@@ -321,6 +336,38 @@
             width: 100%;
             padding: 0.7rem;
             background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+        }
+
+        /* Admin Trigger & Modal */
+        .admin-trigger {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 99;
+        }
+
+        .admin-form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .admin-form-container input {
+            padding: 0.7rem;
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             color: #fff;
@@ -390,17 +437,35 @@
         </form>
     </div>
 
+    <!-- Admin Button -->
+    <div class="admin-trigger" onclick="openAdmin()">⚙️</div>
+
+    <!-- Admin Modal -->
+    <div class="modal-overlay" id="adminModal" style="display:none;">
+        <div class="modal-card">
+            <h2>Добавить товар</h2>
+            <div class="admin-form-container">
+                <input type="text" id="newTitle" placeholder="Название товара">
+                <input type="number" id="newPrice" placeholder="Цена (руб)">
+                <input type="text" id="newImg" placeholder="Имя файла (например, 3.jpg) или URL">
+                <button class="btn btn-primary" onclick="addNewProduct()">Добавить</button>
+                <button class="btn btn-secondary" onclick="closeAdmin()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const TELEGRAM_BOT_TOKEN = '8727623250:AAHNoRs1vICs88RgLefTUOQbUd4WxX9G0qM'; 
         const TELEGRAM_CHAT_ID = '7917303098'; 
 
-        // ССЫЛКИ НА КАРТИНКИ ИЗ КОРНЯ РЕПОЗИТОРИЯ:
-        const products = [
+        const defaultProducts = [
             { id: 1, title: 'Товар №1', price: 1000, image: '1.jpg' },
             { id: 2, title: 'Товар №2', price: 2000, image: '2.jpg' }
         ];
 
+        let products = JSON.parse(localStorage.getItem('my_products')) || defaultProducts;
         let cart = [];
+        let isAdmin = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('ageConfirmed') === 'true') {
@@ -422,6 +487,7 @@
             const grid = document.getElementById('catalogGrid');
             grid.innerHTML = items.map(product => `
                 <div class="card">
+                    ${isAdmin ? `<button class="del-btn" style="display:block;" onclick="deleteProduct(${product.id})">🗑️ Удалить</button>` : ''}
                     <div class="card-img-wrap">
                         <img src="${product.image}" alt="${product.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x500/1a1a24/ffffff?text=Фото+не+найдено';">
                     </div>
@@ -481,6 +547,50 @@
         function removeFromCart(index) {
             cart.splice(index, 1);
             updateCart();
+        }
+
+        function openAdmin() {
+            const pass = prompt('Введите пароль администратора:');
+            if (pass === 'hackpack1977@') {
+                isAdmin = true;
+                document.getElementById('adminModal').style.display = 'flex';
+                renderProducts(products);
+            } else if(pass !== null) {
+                alert('Неверный пароль!');
+            }
+        }
+
+        function closeAdmin() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        function addNewProduct() {
+            const title = document.getElementById('newTitle').value;
+            const price = parseFloat(document.getElementById('newPrice').value);
+            const image = document.getElementById('newImg').value;
+
+            if (!title || !price || !image) {
+                return alert('Заполните все поля!');
+            }
+
+            const newProd = { id: Date.now(), title, price, image };
+            products.push(newProd);
+            localStorage.setItem('my_products', JSON.stringify(products));
+
+            renderProducts(products);
+            closeAdmin();
+
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newPrice').value = '';
+            document.getElementById('newImg').value = '';
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Удалить этот товар?')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('my_products', JSON.stringify(products));
+                renderProducts(products);
+            }
         }
 
         async function sendOrder(e) {
