@@ -394,12 +394,10 @@
         const TELEGRAM_BOT_TOKEN = '8727623250:AAHNoRs1vICs88RgLefTUOQbUd4WxX9G0qM'; 
         const TELEGRAM_CHAT_ID = '7917303098'; 
 
+        // ССЫЛКИ НА КАРТИНКИ ИЗ КОРНЯ РЕПОЗИТОРИЯ:
         const products = [
-            { id: 1, title: 'Смарт-стимулятор Pulse Premium', price: 6490, image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500' },
-            { id: 2, title: 'Шелковый комплект белья', price: 4200, image: 'https://images.unsplash.com/photo-1583846783214-7229a91b20ed?w=500' },
-            { id: 3, title: 'Массажное масло 150ml', price: 1850, image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500' },
-            { id: 4, title: 'Вибропуля с ДУ пультом', price: 2990, image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500' },
-            { id: 5, title: 'Атласная маска на глаза', price: 1100, image: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=500' }
+            { id: 1, title: 'Товар №1', price: 1000, image: '1.jpg' },
+            { id: 2, title: 'Товар №2', price: 2000, image: '2.jpg' }
         ];
 
         let cart = [];
@@ -424,7 +422,9 @@
             const grid = document.getElementById('catalogGrid');
             grid.innerHTML = items.map(product => `
                 <div class="card">
-                    <div class="card-img-wrap"><img src="${product.image}" alt="${product.title}"></div>
+                    <div class="card-img-wrap">
+                        <img src="${product.image}" alt="${product.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x500/1a1a24/ffffff?text=Фото+не+найдено';">
+                    </div>
                     <div class="card-body">
                         <div class="card-title">${product.title}</div>
                         <div class="card-footer">
